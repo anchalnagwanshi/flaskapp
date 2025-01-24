@@ -1,0 +1,121 @@
+/* General reset */
+body {
+    margin: 0;
+    font-family: 'Comic Sans MS', cursive, sans-serif; /* Fun font */
+    background: url('images/background.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Overlay for blur effect */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    z-index: -1;
+}
+
+/* Container styling */
+.container {
+    text-align: center;
+    background: url('static/images/background.png') no-repeat center center fixed;
+    background-size: cover;
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    max-width: 450px;
+    width: 100%;
+    border: 5px solid #ff6f61; /* Funky border */
+    position: relative;
+}
+
+/* Heading */
+.container h1 {
+    font-size: 2rem;
+    color: #ff6f61;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px #ffd1c1;
+}
+
+/* Label styling */
+label {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* File input */
+input[type="file"] {
+    display: none; /* Hide the default file input */
+}
+
+/* Custom file upload button */
+label[for="file-upload"] {
+    background-color: #ff6f61;
+    color: #fff;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: transform 0.2s, background-color 0.3s;
+    display: inline-block;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+label[for="file-upload"]:hover {
+    background-color: #ff4d4d;
+    transform: scale(1.1);
+}
+
+/* Submit button */
+button {
+    background-color: #ffd700; /* Gold */
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.3s;
+    margin-top: 15px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background-color: transparent; /* No color */
+    transform: scale(1.1); /* Keeps the hover animation */
+    border: 2px solid #ffbf00; /* Optional: Add a border to maintain visibility */
+}
+
+/* Add spacing to elements */
+form {
+    margin-top: 10px;
+}
+
+/* Cartoon-style shadow for buttons */
+label[for="file-upload"], button {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Adding a decorative cartoon footer */
+.container::after {
+    content: "👾 Let's have fun!";
+    font-size: 1rem;
+    color: #666;
+    display: block;
+    margin-top: 20px;
+}
+
