@@ -22,62 +22,55 @@ def parse_docx(file_path):
     for para in doc.paragraphs:
         text = para.text.strip()
 
-        if "Answer: " in text or "उत्तर" in text:
-            if question_data:
-                question_data["answer"] = text.split(":",1)[-1].strip()
-        # Check for answer block
-       # if text.startswith("Answer -"):
-        #  if question_data:
-        #        question_data["answer"] = text.split("Answer -", 1)[-1].strip()
+        answer_prefixes = ["Answer: ", "उत्तर", "Answer -"]
 
-        # Check for options
-        elif any(text.startswith(prefix) for prefix in option_prefixes):
-            if question_data:
-                option_key = next(prefix for prefix in option_prefixes if text.startswith(prefix))
-                question_data["options"][option_key] = text.split(option_key, 1)[-1].strip()
+        for prefix in answer_prefixes:
+            if prefix in text:
+                if question_data:
+                    question_data["answer"] = text.split(prefix, 1)[-1].strip()
+                break
+        else:
+            if any(text.startswith(prefix) for prefix in option_prefixes):
+                if question_data:
+                    option_key = next(prefix for prefix in option_prefixes if text.startswith(prefix))
+                    question_data["options"][option_key] = text.split(option_key, 1)[-1].strip()
 
-        # Capture question block, considering numbers in the question
-        elif text and not question_data:
-            # Check if the text starts with a digit, treat it as part of the question
-            if text[0].isdigit():
-                question_data = {
-                    "question": text,
-                    "options": {},
-                    "answer": None,
-                    "solution": "",
-                    "positive_marks": "2",
-                    "negative_marks": "0"
-                }
-            else:
-                question_data = {
-                    "question": text,
-                    "options": {},
-                    "answer": None,
-                    "solution": "",
-                    "positive_marks": "2",
-                    "negative_marks": "0"
-                }
+            elif text and not question_data:
+                if text[0].isdigit():
+                    question_data = {
+                        "question": text,
+                        "options": {},
+                        "answer": None,
+                        "solution": "",
+                        "positive_marks": "2",
+                        "negative_marks": "0"
+                    }
+                else:
+                    question_data = {
+                        "question": text,
+                        "options": {},
+                        "answer": None,
+                        "solution": "",
+                        "positive_marks": "2",
+                        "negative_marks": "0"
+                    }
+            elif text and question_data:
+                if "Explanation:" in text or "व्याख्या" in text:
+                    try:
+                        question_data["solution"] = text.split(":", 1)[1].strip()
+                    except IndexError:
+                        print(f"Warning: Unable to split text to extract solution: {text}")
+                elif len(question_data["options"]) < 4:
+                    option_key = opt_pref[i % 4]
+                    i += 1
+                    question_data["options"][option_key] = text.strip()
+                else:
+                    question_data["solution"] += f"{text} "
 
-        # Capture additional solution or description if available
-        elif text and question_data:
-            if "Explanation:" in text or "व्याख्या" in text:
-                try:
-                    question_data["solution"] = text.split(":", 1)[1].strip()
-                except IndexError:
-                    print(f"Warning: Unable to split text to extract solution: {text}")
-            elif len(question_data["options"]) < 4:
-                option_key = opt_pref[i % 4]
-                i += 1
-                question_data["options"][option_key] = text.strip()
-            else:
-                question_data["solution"] += f"{text} "
+            if not text and question_data and question_data["solution"]:
+                questions.append(question_data)
+                question_data = None
 
-        if not text and question_data and question_data["solution"]:
-            questions.append(question_data)
-            question_data = None
-
-
-    # Append the last question_data if not already appended
     if question_data:
         questions.append(question_data)
 
@@ -92,7 +85,7 @@ def get_option(options, keys):
 
 def set_col_widths(table):
     # Adjust widths: 30% for the field column, 70% for the value column
-    widths = [Inches(1.8), Inches(4.2)]  # Adjusted for 30% and 70%
+    widths = [Inches(1.8), Inches(4.2)]
     for row in table.rows:
         for idx, cell in enumerate(row.cells):
             cell.width = widths[idx]
@@ -102,14 +95,11 @@ def generate_docx(questions, output_path):
     doc = Document()
 
     for q in questions:
-        # Create a table with two columns
         table = doc.add_table(rows=0, cols=2)
         table.style = 'Table Grid'
 
-        # Adjust column widths
         set_col_widths(table)
 
-        # Add rows for each field
         fields = [
             ("Question", q['question']),
             ("Type", "multiple_choice"),
@@ -126,12 +116,10 @@ def generate_docx(questions, output_path):
         for field, value in fields:
             row_cells = table.add_row().cells
             row_cells[0].text = field
-            row_cells[1].text = "" if value is None else str(value)  # Ensure no NoneType is assigned
+            row_cells[1].text = "" if value is None else str(value)
 
-        # Add spacing between questions
         doc.add_paragraph("\n")
 
-    # Save the output document
     doc.save(output_path)
 
 # Route for file upload and processing
@@ -147,15 +135,16 @@ def upload_file():
             input_file = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(input_file)
 
-            # Process the file
-            output_file = os.path.join(OUTPUT_FOLDER, f"output_{file.filename}")
-            questions = parse_docx(input_file)
-            generate_docx(questions, output_file)
-
-            return send_file(output_file, as_attachment=True)
+            try:
+                output_file = os.path.join(OUTPUT_FOLDER, f"output_{file.filename}")
+                questions = parse_docx(input_file)
+                generate_docx(questions, output_file)
+                return send_file(output_file, as_attachment=True)
+            except Exception as e:
+                print(f"Error processing file: {e}")
+                return "An error occurred while processing the file."
 
     return render_template('upload.html')
 
-# Run the Flask app
 if __name__ == '__main__':
     app.run(debug=True)
