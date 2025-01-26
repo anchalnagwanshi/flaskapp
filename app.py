@@ -22,7 +22,7 @@ def parse_docx(file_path):
     for para in doc.paragraphs:
         text = para.text.strip()
 
-        answer_prefixes = ["Answer: ", "उत्तर", "Answer -"]
+        answer_prefixes = ["Answer: ", "उत्तर ", "Answer-","Answer"]
 
         for prefix in answer_prefixes:
             if prefix in text:
